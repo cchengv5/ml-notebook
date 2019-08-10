@@ -117,13 +117,21 @@ class Attention(OurLayer):
         qw = K.permute_dimensions(qw, (0, 2, 1, 3))
         kw = K.permute_dimensions(kw, (0, 2, 1, 3))
         vw = K.permute_dimensions(vw, (0, 2, 1, 3))
+        print("qw after permute_dimensions is:", qw)
+        print("kw after permute_dimensions is:", kw)
+        print("vw after permute_dimensions is:", vw)
 
-        
+
         # Attention
         a = K.batch_dot(qw, kw, [3, 3]) / self.key_size**0.5
+        print("1. a:", a)
         a = K.permute_dimensions(a, (0, 3, 2, 1))
+        print("2. a:", a)
         a = to_mask(a, v_mask, 'add')
+        print("3. a:", a)
         a = K.permute_dimensions(a, (0, 3, 2, 1))
+        print("4. a:", a)
+
         if (self.mask_right is not False) or (self.mask_right is not None):
             if self.mask_right is True:
                 ones = K.ones_like(a[: 1, : 1])
@@ -135,14 +143,23 @@ class Attention(OurLayer):
                 mask = K.expand_dims(K.expand_dims(mask, 0), 0)
                 self.mask = mask
                 a = a - mask
+
+        print("5. a:", a)
         a = K.softmax(a)
+        print("6. a:", a)
+
         self.a = a
         # 完成输出
         o = K.batch_dot(a, vw, [3, 2])
+        print("1. o:", o)
         o = K.permute_dimensions(o, (0, 2, 1, 3))
+        print("2. o:", o)
         o = K.reshape(o, (-1, K.shape(o)[1], self.out_dim))
+        print("3. o:", o)
         o = to_mask(o, q_mask, 'mul')
+        print("4. o:", o)
         return o
+        
     def compute_output_shape(self, input_shape):
         return (input_shape[0][0], input_shape[0][1], self.out_dim)
 
