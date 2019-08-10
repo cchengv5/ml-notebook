@@ -78,9 +78,11 @@ class Attention(OurLayer):
     def build(self, input_shape):
 
         super(Attention, self).build(input_shape)
-
+        print("new q_dense : ", self.key_size * self.heads)
         self.q_dense = Dense(self.key_size * self.heads, use_bias=False)
+        print("new k_dense : ", self.key_size * self.heads)
         self.k_dense = Dense(self.key_size * self.heads, use_bias=False)
+        print("new v_dense : ", self.key_size * self.heads)
         self.v_dense = Dense(self.out_dim, use_bias=False)
 
     def call(self, inputs):
@@ -105,6 +107,9 @@ class Attention(OurLayer):
         qw = K.reshape(qw, (-1, K.shape(qw)[1], self.heads, self.key_size))
         kw = K.reshape(kw, (-1, K.shape(kw)[1], self.heads, self.key_size))
         vw = K.reshape(vw, (-1, K.shape(vw)[1], self.heads, self.size_per_head))
+        print("qw after reshap is:", qw)
+        print("kw after reshap is:", kw)
+        print("vw after reshap is:", vw)
 
 
 
@@ -112,6 +117,8 @@ class Attention(OurLayer):
         qw = K.permute_dimensions(qw, (0, 2, 1, 3))
         kw = K.permute_dimensions(kw, (0, 2, 1, 3))
         vw = K.permute_dimensions(vw, (0, 2, 1, 3))
+
+        
         # Attention
         a = K.batch_dot(qw, kw, [3, 3]) / self.key_size**0.5
         a = K.permute_dimensions(a, (0, 3, 2, 1))
